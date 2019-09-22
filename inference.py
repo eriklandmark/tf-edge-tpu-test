@@ -4,6 +4,11 @@ import timeit
 
 tf.enable_eager_execution()
 
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+sess = tf.Session(graph=tf.get_default_graph(), config=config)
+sess.as_default()
+
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.fashion_mnist.load_data()
 
 LABELS = ["T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"]
@@ -21,7 +26,7 @@ test_ds = tf.data.Dataset.from_tensor_slices(x_test_ds)
 test_ds = test_ds.batch(64)
 test_ds = test_ds.cache(filename='./cache/cache-inf.tf-data')
 
-model = tf.keras.models.load_model('model/model.h5')
+model = tf.keras.models.load_model('models/model.h5')
 model.summary()
 
 
@@ -29,16 +34,26 @@ tf.global_variables_initializer()
 
 
 def pre():
-    for image_nr in range(100):
+
+    rights = 0
+    
+    for image_nr in range(10000):
         image = x_test_ds[image_nr]
         label = model.predict(tf.expand_dims(image, 0), steps=1, verbose=1)
         argmax = tf.math.argmax(label[0]).numpy()
-        print(f"{LABELS[argmax]} = {LABELS[y_test[image_nr]]}")
+        
+        #print(f"{LABELS[argmax]} = {LABELS[y_test[image_nr]]}")
+        
+        if y_test[image_nr] == argmax:
+            rights += 1
+
         # title = f"Predict: {LABELS[argmax]} | Right: {LABELS[y_test[image_nr]]}"
         # plot.plot_image_from_tensor(image, title=title)
+    
+    print(f"Got {rights} of 10000 rights! ({rights / 10000 * 100} %)")
 
 
-time = timeit.timeit(pre, number=10)
+time = timeit.timeit(pre, number=1)
 print(time)
 
 
