@@ -19,8 +19,7 @@ def resize_fn(img):
     return tf.image.resize_images([tens], tf.convert_to_tensor([96, 96]), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)[0]
 
 
-x_test_reshape = tf.map_fn(resize_fn, x_test)
-x_test_ds = tf.cast(tf.convert_to_tensor(x_test_reshape), 'float32') / 255.0
+x_test_ds = tf.cast(tf.convert_to_tensor(tf.map_fn(resize_fn, x_test[:100])), 'float32') / 255.0
 # y_test_ds = tf.keras.utils.to_categorical(y_test, num_classes=10, dtype='float32')
 test_ds = tf.data.Dataset.from_tensor_slices(x_test_ds)
 test_ds = test_ds.batch(64)
